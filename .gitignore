@@ -1,4 +1,16 @@
-venv/ 
-__pycache__/ 
-*.pyc 
-*.sqlite3 
+# Entornos virtuales
+venv/
+env/
+
+# Archivos de Python
+__pycache__/
+*.pyc
+
+# Base de datos local
+*.sqlite3
+
+# Archivos de entorno
+.env
+
+# Logs
+*.log
