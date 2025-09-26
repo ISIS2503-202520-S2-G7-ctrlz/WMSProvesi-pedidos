@@ -22,7 +22,7 @@ class Pedido(models.Model):
 
     codigo = models.CharField(max_length=50, unique=True)
     cliente = models.CharField(max_length=100)
-    estado = models.CharField(max_length=40, choices=ESTADOS, default="pendiente")
+    estado = models.CharField(max_length=40, choices=ESTADOS, default="transito")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     detalles = models.TextField(blank=True, null=True)
