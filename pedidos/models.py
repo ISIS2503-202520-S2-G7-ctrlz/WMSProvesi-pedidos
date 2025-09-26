@@ -1,6 +1,7 @@
 from django.db import models
 from productos.models import Producto
 
+
 class Pedido(models.Model):
     ESTADOS = [
         ("transito", "Transito"),
@@ -26,11 +27,22 @@ class Pedido(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     detalles = models.TextField(blank=True, null=True)
-    productos = models.ManyToManyField(Producto,related_name="pedidos")
+
+    # relación con productos pero pasando por un modelo intermedio
+    productos = models.ManyToManyField(Producto, through="DetallePedido", related_name="pedidos")
 
     def __str__(self):
         return f"Pedido {self.codigo} - {self.estado}"
-    
+
+
+class DetallePedido(models.Model):
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.producto.nombre} x{self.cantidad}"
+
 
 class HistorialPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="historial")
@@ -40,4 +52,3 @@ class HistorialPedido(models.Model):
 
     def __str__(self):
         return f"{self.get_estado_display()} - {self.fecha.strftime('%Y-%m-%d %H:%M')}"
-
