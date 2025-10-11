@@ -1,0 +1,22 @@
+#!/bin/bash
+# Actualiza paquetes
+apt update -y
+apt install -y python3-pip git
+
+# Clona el repositorio
+cd /home/ubuntu
+git clone https://github.com/ISIS2503-202520-S2-G7-ctrlz/WMSProvesi-pedidos.git
+cd WMSProvesi-pedidos
+
+# Instala dependencias
+pip3 install -r requirements.txt --break-system-packages
+
+# Configura settings.py dinámicamente
+DB_HOST="IP_PRIVADA_DE_TU_RDS"  # cambia esto por la IP o endpoint del RDS
+sed -i "s/'HOST': 'DB_HOST'/'HOST': '$DB_HOST'/g" WMSProvesi-pedidos/settings.py
+
+# Aplica migraciones (solo si quieres que cada instancia lo intente al inicio)
+python3 manage.py migrate
+
+# Arranca el servidor (puede ser gunicorn)
+nohup python3 manage.py runserver 0.0.0.0:8000 &
