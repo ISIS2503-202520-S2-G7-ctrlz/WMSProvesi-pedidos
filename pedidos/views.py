@@ -13,6 +13,7 @@ def listar_pedidos(request):
                 {
                     "producto": detalle.producto.nombre,
                     "cantidad": detalle.cantidad,
+                    "ubicacion": detalle.producto.ubicacion,
                 }
                 for detalle in pedido.detallepedido_set.all()
             ]
@@ -53,6 +54,7 @@ def obtener_pedido(request, codigo):
             {
                 "producto": detalle.producto.nombre,
                 "cantidad": detalle.cantidad,
+                "ubicacion": detalle.producto.ubicacion,
             }
             for detalle in pedido.detallepedido_set.all()
         ]
