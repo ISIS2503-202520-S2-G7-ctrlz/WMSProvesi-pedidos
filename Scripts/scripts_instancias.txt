@@ -1,22 +1,38 @@
 #!/bin/bash
-# Actualiza paquetes
-apt update -y
-apt install -y python3-pip git
+sudo -i -u ubuntu bash << 'EOF'
 
-# Clona el repositorio
+# === Variables ===
+DB_HOST="172.31.27.105"   # ⚠️ Reemplaza con la IP privada real de tu base de datos
+
+# === Instalación de dependencias ===
+sudo apt update -y
+sudo apt install -y git python3-pip
+
+# === Clonar el repositorio ===
 cd /home/ubuntu
 git clone https://github.com/ISIS2503-202520-S2-G7-ctrlz/WMSProvesi-pedidos.git
-cd WMSProvesi-pedidos
 
-# Instala dependencias
+# === Instalar dependencias ===
+cd WMSProvesi-pedidos
 pip3 install -r requirements.txt --break-system-packages
 
-# Configura settings.py dinámicamente
-DB_HOST="IP_PRIVADA_DE_TU_RDS"  # cambia esto por la IP o endpoint del RDS
-sed -i "s/'HOST': 'DB_HOST'/'HOST': '$DB_HOST'/g" WMSProvesi-pedidos/settings.py
+# === Entrar al directorio del proyecto principal ===
+cd WMSProvesi-pedidos
 
-# Aplica migraciones (solo si quieres que cada instancia lo intente al inicio)
+# === Confirmar reemplazo del HOST ===
+echo "Configurando la base de datos con host ${DB_HOST}..."
+sed -i "s/'HOST': 'localhost'/'HOST': '${DB_HOST}'/" settings.py
+
+# Verificar cambio
+grep "'HOST'" settings.py
+
+cd ..
+
+# === Ejecutar migraciones ===
+python3 manage.py makemigrations
 python3 manage.py migrate
 
-# Arranca el servidor (puede ser gunicorn)
-nohup python3 manage.py runserver 0.0.0.0:8000 &
+# === Levantar servidor Django ===
+nohup python3 manage.py runserver 0.0.0.0:8080 > /home/ubuntu/django.log 2>&1 &
+
+EOF
