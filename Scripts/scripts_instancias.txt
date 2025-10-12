@@ -2,7 +2,7 @@
 sudo -i -u ubuntu bash << 'EOF'
 
 # === Variables ===
-DB_HOST="172.31.27.105"   # ⚠️ Reemplaza con la IP privada real de tu base de datos
+DB_HOST="172.31.27.105"   #Reemplaza con la IP privada real de tu base de datos
 
 # === Instalación de dependencias ===
 sudo apt update -y
