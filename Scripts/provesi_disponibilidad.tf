@@ -236,7 +236,7 @@ resource "aws_instance" "alarms" {
 
 # Recurso. Define la instancia EC2 para la aplicación de Monitoring (Django).
 # Esta instancia incluye un script de creación para instalar la aplicación de Monitoring y aplicar las migraciones.
-resource "aws_instance" "provesi" {
+resource "aws_instance" "monitoring" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
   associate_public_ip_address = true
