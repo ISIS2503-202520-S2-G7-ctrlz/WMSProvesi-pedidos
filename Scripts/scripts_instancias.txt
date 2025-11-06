@@ -10,14 +10,14 @@ sudo apt install -y git python3-pip
 
 # === Clonar el repositorio ===
 cd /home/ubuntu
-git clone https://github.com/ISIS2503-202520-S2-G7-ctrlz/WMSProvesi-pedidos.git
+git clone https://github.com/ISIS2503-202520-S2-G7-ctrlz/WMSProvesi_pedidos.git
 
 # === Instalar dependencias ===
-cd WMSProvesi-pedidos
+cd WMSProvesi_pedidos
 pip3 install -r requirements.txt --break-system-packages
 
 # === Entrar al directorio del proyecto principal ===
-cd WMSProvesi-pedidos
+cd WMSProvesi_pedidos
 
 # === Confirmar reemplazo del HOST ===
 echo "Configurando la base de datos con host ${DB_HOST}..."
