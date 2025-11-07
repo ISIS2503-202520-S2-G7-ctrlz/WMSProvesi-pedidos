@@ -217,9 +217,9 @@ resource "aws_instance" "alarms" {
               sudo apt-get install -y python3-pip git build-essential libpq-dev python3-dev
 
               
-              if [ ! -d WMSProvesi-pedidos ]; then
-                git clone ${local.repository}
-              fi
+        
+              git clone ${local.repository}
+              
             
 
               cd WMSProvesi-pedidos
@@ -251,12 +251,9 @@ resource "aws_instance" "monitoring" {
               sudo apt-get update -y
               sudo apt-get install -y python3-pip git build-essential libpq-dev python3-dev
 
-              mkdir -p /labs
-              cd /labs
-
-              if [ ! -d WMSProvesi-pedidos ]; then
-                git clone ${local.repository}
-              fi
+              
+              git clone ${local.repository}
+            
 
               cd WMSProvesi-pedidos
               git fetch origin ${local.branch}
