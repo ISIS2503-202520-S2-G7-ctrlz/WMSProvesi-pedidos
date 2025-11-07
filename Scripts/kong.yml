@@ -12,13 +12,13 @@ services:
         strip_path: false
     
 upstreams:
-  - name: monitoring_upstream
+  - name: provesi_upstream
     targets:
-      - target: <ip-privada-monitoring-app-a>:8080
+      - target: <ip-privada-provesi-app-a>:8080
         weight: 100
-      - target: <ip-privada-monitoring-app-b>:8080
+      - target: <ip-privada-provesi-app-b>:8080
         weight: 100
-      - target: <ip-privada-monitoring-app-c>:8080
+      - target: <ip-privada-provesi-app-c>:8080
         weight: 100
     healthchecks:
       threshold: 35
