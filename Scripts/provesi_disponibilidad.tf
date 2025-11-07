@@ -6,18 +6,18 @@
 #
 # Elementos a desplegar en AWS:
 # 1. Grupos de seguridad:
-#    - cbd-traffic-django (puerto 8080)
-#    - cbd-traffic-cb (puertos 8000 y 8001)
-#    - cbd-traffic-db (puerto 5432)
-#    - cbd-traffic-ssh (puerto 22)
+#    - WMS-traffic-django (puerto 8080)
+#    - WMS-traffic-cb (puertos 8000 y 8001)
+#    - WMS-traffic-db (puerto 5432)
+#    - WMS-traffic-ssh (puerto 22)
 #
 # 2. Instancias EC2:
-#    - cbd-kong
-#    - cbd-db (PostgreSQL instalado y configurado)
-#    - cbd-monitoring (Monitoring app instalada y migraciones aplicadas)
-#    - cbd-alarms-a (Monitoring app instalada)
-#    - cbd-alarms-b (Monitoring app instalada)
-#    - cbd-alarms-c (Monitoring app instalada)
+#    - WMS-kong
+#    - WMS-db (PostgreSQL instalado y configurado)
+#    - WMS-Provesi-a (Monitoring app instalada y migraciones aplicadas)
+#    - WMS-Provesi-b (Monitoring app instalada y migraciones aplicadas)
+#    - WMS-Provesi-c (Monitoring app instalada y migraciones aplicadas)
+#
 # ******************************************************************
 
 # Variable. Define la región de AWS donde se desplegará la infraestructura.
@@ -31,7 +31,7 @@ variable "region" {
 variable "project_prefix" {
   description = "Prefix used for naming AWS resources"
   type        = string
-  default     = "provesi"
+  default     = "WMS"
 }
 
 # Variable. Define el tipo de instancia EC2 a usar para las máquinas virtuales.
@@ -50,7 +50,7 @@ provider "aws" {
 locals {
   project_name = "${var.project_prefix}-disponibilidad"
   repository   = "https://github.com/ISIS2503-202520-S2-G7-ctrlz/WMSProvesi-pedidos.git"
-  branch       = "main"
+  branch       = "Circuit-Breaker"
 
   common_tags = {
     Project   = local.project_name
@@ -184,7 +184,7 @@ resource "aws_instance" "database" {
               sudo apt-get install -y postgresql postgresql-contrib
 
               sudo -u postgres psql -c "CREATE USER provesi_user WITH PASSWORD 'isis2503';"
-              sudo -u postgres createdb -O provesi_user monitoring_db
+              sudo -u postgres createdb -O provesi_user provesi_db
               echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
               echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/16/main/postgresql.conf
               echo "max_connections=2000" | sudo tee -a /etc/postgresql/16/main/postgresql.conf
@@ -197,46 +197,11 @@ resource "aws_instance" "database" {
   })
 }
 
-# Recurso. Define las instancias EC2 para el servicio de alarmas de la aplicación de Monitoring.
-# Se crean tres instancias (a, b, c) usando un bucle.
-# Cada instancia incluye un script de creación para instalar la aplicación de Monitoring.
-resource "aws_instance" "alarms" {
-  for_each = toset(["a", "b", "c"])
-
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.instance_type
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.traffic_django.id, aws_security_group.traffic_ssh.id]
-
-  user_data = <<-EOT
-              #!/bin/bash
-              sudo export DATABASE_HOST=${aws_instance.database.private_ip}
-              echo "DATABASE_HOST=${aws_instance.database.private_ip}" | sudo tee -a /etc/environment
-
-              sudo apt-get update -y
-              sudo apt-get install -y python3-pip git build-essential libpq-dev python3-dev
-
-              
-              if [ ! -d WMSProvesi-pedidos ]; then
-                git clone ${local.repository}
-              fi
-            
-
-              cd WMSProvesi-pedidos
-              git fetch origin ${local.branch}
-              sudo pip3 install --upgrade pip --break-system-packages
-              sudo pip3 install -r requirements.txt --break-system-packages
-              EOT
-
-  tags = merge(local.common_tags, {
-    Name = "${var.project_prefix}-alarms-${each.key}"
-    Role = "alarms"
-  })
-}
-
 # Recurso. Define la instancia EC2 para la aplicación de Monitoring (Django).
 # Esta instancia incluye un script de creación para instalar la aplicación de Monitoring y aplicar las migraciones.
 resource "aws_instance" "provesi" {
+  for_each = toset(["a", "b", "c"])
+
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
   associate_public_ip_address = true
@@ -260,6 +225,7 @@ resource "aws_instance" "provesi" {
 
               cd WMSProvesi-pedidos
               git fetch origin ${local.branch}
+              git checkout ${local.branch} 
               sudo pip3 install --upgrade pip --break-system-packages
               sudo pip3 install -r requirements.txt --break-system-packages
 
@@ -268,8 +234,8 @@ resource "aws_instance" "provesi" {
               EOT
 
   tags = merge(local.common_tags, {
-    Name = "${var.project_prefix}-monitoring"
-    Role = "monitoring-app"
+    Name = "${var.project_prefix}-provesi-${each.key}"
+    Role = "provesi-app"
   })
 
   depends_on = [aws_instance.database]
