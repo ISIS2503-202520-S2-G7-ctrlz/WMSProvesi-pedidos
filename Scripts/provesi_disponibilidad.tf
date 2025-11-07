@@ -14,9 +14,9 @@
 # 2. Instancias EC2:
 #    - WMS-kong
 #    - WMS-db (PostgreSQL instalado y configurado)
-#    - WMS-Provesi-a (Monitoring app instalada y migraciones aplicadas)
-#    - WMS-Provesi-b (Monitoring app instalada y migraciones aplicadas)
-#    - WMS-Provesi-c (Monitoring app instalada y migraciones aplicadas)
+#    - WMS-Provesi-a (Provesi app instalada y migraciones aplicadas)
+#    - WMS-Provesi-b (Provesi app instalada y migraciones aplicadas)
+#    - WMS-Provesi-c (Provesi app instalada y migraciones aplicadas)
 #
 # ******************************************************************
 
@@ -197,8 +197,8 @@ resource "aws_instance" "database" {
   })
 }
 
-# Recurso. Define la instancia EC2 para la aplicación de Monitoring (Django).
-# Esta instancia incluye un script de creación para instalar la aplicación de Monitoring y aplicar las migraciones.
+# Recurso. Define la instancia EC2 para la aplicación de Provesi (Django).
+# Esta instancia incluye un script de creación para instalar la aplicación de Provesi y aplicar las migraciones.
 resource "aws_instance" "provesi" {
   for_each = toset(["a", "b", "c"])
 
@@ -247,29 +247,18 @@ output "kong_public_ip" {
   value       = aws_instance.kong.public_ip
 }
 
-# Salida. Muestra las direcciones IP públicas de las instancias de la aplicación de alarmas.
-output "alarms_public_ips" {
-  description = "Public IP addresses for the alarms service instances"
-  value       = { for id, instance in aws_instance.alarms : id => instance.public_ip }
+# Salida. Muestra las direcciones IP públicas de las instancias de la aplicación de Provesi.
+output "provesi_public_ips" {
+  description = "Public IP addresses for the provesi app instances"
+  value       = { for id, instance in aws_instance.provesi : id => instance.public_ip }
 }
 
-# Salida. Muestra la dirección IP pública de la instancia de la aplicación de Monitoring.
-output "monitoring_public_ip" {
-  description = "Public IP address for the monitoring service application"
-  value       = aws_instance.monitoring.public_ip
+# Salida. Muestra las direcciones IP privadas de las instancias de la aplicación de provesi.
+output "provesi_private_ips" {
+  description = "Private IP addresses for the provesi app instances"
+  value       = { for id, instance in aws_instance.provesi : id => instance.private_ip }
 }
 
-# Salida. Muestra las direcciones IP privadas de las instancias de la aplicación de alarmas.
-output "alarms_private_ips" {
-  description = "Private IP addresses for the alarms service instances"
-  value       = { for id, instance in aws_instance.alarms : id => instance.private_ip }
-}
-
-# Salida. Muestra la dirección IP privada de la instancia de la aplicación de Monitoring.
-output "monitoring_private_ip" {
-  description = "Private IP address for the monitoring service application"
-  value       = aws_instance.monitoring.private_ip
-}
 
 # Salida. Muestra la dirección IP privada de la instancia de la base de datos PostgreSQL.
 output "database_private_ip" {
