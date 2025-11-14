@@ -3,8 +3,8 @@ from jose import jwt
 from urllib.request import urlopen
 from django.http import JsonResponse
 
-AUTH0_DOMAIN = "dev-146s3z5mxd0jafdm.us.auth0.com"
-API_IDENTIFIER = "https://wmsprovesi-api"
+AUTH0_DOMAIN = "dev-dr00hjc2t54h2t44.us.auth0.com"
+API_IDENTIFIER = "https://provesi-wms/api"
 ALGORITHMS = ["RS256"]
 
 def get_token_auth_header(request):

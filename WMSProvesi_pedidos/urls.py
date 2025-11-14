@@ -15,10 +15,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from pedidos import views as pedidos_views  # si lo necesitas
+from productos import views as productos_views
+from . import views as project_views  # si creas una vista me en el proyecto
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('pedidos/', include('pedidos.urls')),
-    path('productos/', include('productos.urls')),
+    path('logout/', project_views.logout, name='logout'),
+    # Auth de Django y social-auth (Auth0)
+    path('', include('django.contrib.auth.urls')),
+    path('', include('social_django.urls')),
+    
+    # Tus APIs
+    path('api/productos/', include('productos.urls')),
+    path('api/pedidos/', include('pedidos.urls')),
+
+    # Endpoint para que React sepa quién es el usuario
+    path('api/me/', project_views.me, name='me'),
+
 ]
+
 

@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
 from .models import Pedido
 from WMSProvesi_pedidos.utils.auth import requires_auth
 
-@requires_auth
+@login_required
 def listar_pedidos(request):
     if request.method == "GET":
         pedidos_data = []

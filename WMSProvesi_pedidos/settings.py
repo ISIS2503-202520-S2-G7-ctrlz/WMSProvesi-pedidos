@@ -43,18 +43,18 @@ INSTALLED_APPS = [
     'productos',
     'corsheaders',
     'rest_framework',
-    
+    'social_django',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'WMSProvesi_pedidos.urls'
@@ -70,7 +70,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+           	'social_django.context_processors.backends',
+    		'social_django.context_processors.login_redirect', 
+
+	   ],
         },
     },
 ]
@@ -87,7 +90,7 @@ DATABASES = {
         'NAME': 'provesi_db',
         'USER': 'provesi_user',
         'PASSWORD': 'isis2503',
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'HOST': '172.31.30.126',
         'PORT': '5432',
     }
 }
@@ -127,7 +130,7 @@ USE_TZ = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -141,24 +144,41 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-#Cors
+# CORS config
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    "http://3.222.161.109:5173",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
-#Verificacion de token rest
+# REST Framework: usar sesión, NO JWT
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
-SIMPLE_JWT = {
-    'ALGORITHM': 'RS256',
-    'SIGNING_KEY': None,
-    'VERIFYING_KEY': None,
-    'AUDIENCE': 'https://wmsprovesi-api',  # 👈 mismo audience
-    'ISSUER': 'https://dev-146s3z5mxd0jafdm.us.auth0.com/',  # 👈 tu dominio Auth0
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-}
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.auth0.Auth0OAuth2',  # Auth0
+    'django.contrib.auth.backends.ModelBackend',  # Django username/password (por si acaso)
+)
+
+
+# URL donde se redirige al iniciar login (Auth0)
+LOGIN_URL = '/login/auth0'
+
+
+# A dónde vuelve Auth0 después de LOGIN exitoso
+LOGIN_REDIRECT_URL = '/'   # Puedes dejar / o algo tipo /app/
+
+# A dónde vuelve el usuario después de LOGOUT
+LOGOUT_REDIRECT_URL = 'http://3.222.161.109:8080'
+
+# Datos de tu aplicación en Auth0 (tipo Regular Web Application)
+SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-dr00hjc2t54h2t44.us.auth0.com'
+SOCIAL_AUTH_AUTH0_KEY = '6JUf2CUd9P1gtWrlp24iRwL5aDWbweXi'  # Client ID
+SOCIAL_AUTH_AUTH0_SECRET = '-6LYC7J4y2VA0FoEg_BgR-SwQk-ERZqbAASvuiS_HKl-kapaMHRP4ndRc9z4BLhj'           # NO lo compartas
+SOCIAL_AUTH_AUTH0_SCOPE = [
+    'openid',
+    'profile',
+    'email',
+]
