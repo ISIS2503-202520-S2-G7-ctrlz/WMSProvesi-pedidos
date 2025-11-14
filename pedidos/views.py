@@ -1,6 +1,9 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from .models import Pedido
+from .validators import validar_codigo_pedido
+from django.core.exceptions import ValidationError
+
 
 def listar_pedidos(request):
     if request.method == "GET":
@@ -8,7 +11,6 @@ def listar_pedidos(request):
         pedidos = Pedido.objects.all()
 
         for pedido in pedidos:
-            # productos con cantidad
             productos_data = [
                 {
                     "producto": detalle.producto.nombre,
@@ -18,7 +20,6 @@ def listar_pedidos(request):
                 for detalle in pedido.detallepedido_set.all()
             ]
 
-            # historial del pedido
             historial_data = [
                 {
                     "estado": h.get_estado_display(),
@@ -27,8 +28,6 @@ def listar_pedidos(request):
                 }
                 for h in pedido.historial.all().order_by("fecha")
             ]
-
-            # datos principales del pedido
             pedido_data = {
                 "codigo": pedido.codigo,
                 "cliente": pedido.cliente,
@@ -45,11 +44,70 @@ def listar_pedidos(request):
         return JsonResponse(pedidos_data, safe=False)
 
 
-def obtener_pedido(request, codigo):
+def obtener_pedido_seguro(request, codigo):
+    """
+    VISTA SEGURA - Protegida contra SQL Injection
+    """
+    if request.method == "GET":
+        try:
+            codigo_seguro = validar_codigo_pedido(codigo)
+            
+            pedido = get_object_or_404(Pedido, codigo=codigo_seguro)
+            
+            productos_data = [
+                {
+                    "producto": detalle.producto.nombre,
+                    "cantidad": detalle.cantidad,
+                    "ubicacion": detalle.producto.ubicacion,
+                }
+                for detalle in pedido.detallepedido_set.all()
+            ]
+
+            historial_data = [
+                {
+                    "estado": h.get_estado_display(),
+                    "fecha": h.fecha.strftime("%Y-%m-%d %H:%M"),
+                    "observacion": h.observacion,
+                }
+                for h in pedido.historial.all().order_by("fecha")
+            ]
+
+            pedido_data = {
+                "codigo": pedido.codigo,
+                "cliente": pedido.cliente,
+                "estado": pedido.get_estado_display(),
+                "fecha_creacion": pedido.fecha_creacion.strftime("%Y-%m-%d %H:%M"),
+                "fecha_actualizacion": pedido.fecha_actualizacion.strftime("%Y-%m-%d %H:%M"),
+                "detalles": pedido.detalles,
+                "productos": productos_data,
+                "historial": historial_data,
+                "seguro": True,  
+                "mensaje": "Consulta segura - Protegida contra SQL Injection"
+            }
+
+            return JsonResponse(pedido_data, safe=False)
+            
+        except ValidationError as e:
+            return JsonResponse({
+                'error': 'Código inválido detectado',
+                'detalle': str(e),
+                'seguro': True
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': 'Error interno del servidor',
+                'seguro': True
+            }, status=500)
+
+
+def obtener_pedido_vulnerable(request, codigo):
+    """
+    VISTA VULNERABLE - NO USAR EN PRODUCCIÓN
+    Solo para demostración
+    """
     if request.method == "GET":
         pedido = get_object_or_404(Pedido, codigo=codigo)
-
-        # productos con cantidad
+        
         productos_data = [
             {
                 "producto": detalle.producto.nombre,
@@ -59,7 +117,6 @@ def obtener_pedido(request, codigo):
             for detalle in pedido.detallepedido_set.all()
         ]
 
-        # historial del pedido
         historial_data = [
             {
                 "estado": h.get_estado_display(),
@@ -69,7 +126,6 @@ def obtener_pedido(request, codigo):
             for h in pedido.historial.all().order_by("fecha")
         ]
 
-        # datos principales
         pedido_data = {
             "codigo": pedido.codigo,
             "cliente": pedido.cliente,
@@ -79,6 +135,8 @@ def obtener_pedido(request, codigo):
             "detalles": pedido.detalles,
             "productos": productos_data,
             "historial": historial_data,
+            "vulnerable": True, 
+            "advertencia": "ESTA VISTA ES VULNERABLE A SQL INJECTION"
         }
 
         return JsonResponse(pedido_data, safe=False)
