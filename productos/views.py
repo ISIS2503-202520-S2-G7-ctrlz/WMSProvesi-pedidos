@@ -1,18 +1,28 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-from .models import Producto
+
+from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 
+from django.views.decorators.http import require_GET
 
-@require_GET
-def listar_productos(request):
-    productos = Producto.objects.all().values("id", "nombre", "sku", "precio", "stock", "ubicacion")
-    # opcional: convertir Decimal a float si hiciera falta
-    productos_list = []
-    for p in productos:
-        p["precio"] = float(p["precio"])
-        productos_list.append(p)
-    return JsonResponse(productos_list, safe=False)
+from .models import Producto
+from .logic.producto_logica import get_productos, get_producto_by_id
+
+
+
+def productos_list(request):
+    productos = get_productos()
+    context = {
+        'product_list': productos
+    }
+    return render(request, 'Producto/productos.html', context)
+
+def producto_detalle(request, idProducto):
+    productos = get_producto_by_id(idProducto)
+    context = {
+        'product_list': [productos]
+    }
+    return render(request, 'Producto/productos.html', context)
 
 
 @require_GET
