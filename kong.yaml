@@ -1,0 +1,31 @@
+_format_version: "2.1"
+
+services:
+  - name: pedidos_service
+    host: pedidos_upstream
+    protocol: http
+    routes:
+      - name: pedidos
+        paths:
+          - /pedidos
+        strip_path: false
+
+  - name: productos_service
+    host: productos_upstream
+    protocol: http
+    routes:
+      - name: productos
+        paths:
+          - /productos
+        strip_path: false
+    
+upstreams:
+  - name: pedidos_upstream
+    targets:
+      - target: <PEDIDOS_HOST>:8080
+        weight: 100
+
+  - name: productos_upstream
+    targets:
+      - target: <PRODUCTOS_HOST>:8080
+        weight: 100
