@@ -29,9 +29,12 @@ urlpatterns = [
     # Tus APIs
     path('api/productos/', include('productos.urls')),
     path('api/pedidos/', include('pedidos.urls')),
+    path('api/', include('bodegas.urls')),
 
     # Endpoint para que React sepa quién es el usuario
     path('api/me/', project_views.me, name='me'),
+    
+    
 
 ]
 

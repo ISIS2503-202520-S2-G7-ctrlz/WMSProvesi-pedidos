@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'social_django',
+    'bodegas',
 ]
 
 MIDDLEWARE = [
