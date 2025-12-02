@@ -1,6 +1,9 @@
 _format_version: "2.1"
 
 services:
+  # --------------------------
+  # Servicio de PEDIDOS
+  # --------------------------
   - name: pedidos_service
     host: pedidos_upstream
     protocol: http
@@ -10,6 +13,9 @@ services:
           - /pedidos
         strip_path: false
 
+  # --------------------------
+  # Servicio de PRODUCTOS
+  # --------------------------
   - name: productos_service
     host: productos_upstream
     protocol: http
@@ -18,7 +24,31 @@ services:
         paths:
           - /productos
         strip_path: false
-    
+
+  # --------------------------
+  # Servicio de BODEGAS
+  # --------------------------
+  - name: bodegas_service
+    host: bodegas_upstream
+    protocol: http
+    routes:
+      - name: bodegas
+        paths:
+          - /bodegas
+        strip_path: false
+
+  # --------------------------
+  # Servicio de FRONT (Vite)
+  # --------------------------
+  - name: front_service
+    host: front_upstream
+    protocol: http
+    routes:
+      - name: front
+        paths:
+          - /
+        strip_path: false
+
 upstreams:
   - name: pedidos_upstream
     targets:
@@ -28,4 +58,14 @@ upstreams:
   - name: productos_upstream
     targets:
       - target: <PRODUCTOS_HOST>:8080
+        weight: 100
+
+  - name: bodegas_upstream
+    targets:
+      - target: <BODEGAS_HOST>:8080
+        weight: 100
+
+  - name: front_upstream
+    targets:
+      - target: <FRONT_HOST>:5173
         weight: 100
